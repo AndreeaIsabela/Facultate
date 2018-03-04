@@ -4,14 +4,13 @@ class ProducerConsumer
 {
 public:
 
-
   void Produce(int i);
   
   int Consume();
   
 
-  queue<int> pcQueue;
-  bool ableToConsume = false;
+  static queue<int> pcQueue;
+  static bool ableToConsume;
   mutex mtx1,mtx2;
 };
 

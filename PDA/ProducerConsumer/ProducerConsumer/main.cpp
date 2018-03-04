@@ -1,43 +1,65 @@
 #include"stdafx.h"
 #include"ProducerConsumer.h"
 
-
+int maxNr = 20;
 int nrOfThreads = 6;
 int producerIndex = 0;
 int consumerIndex = 0;
 mutex prodMtx;
 mutex consMtx;
-ProducerConsumer ProdCons;
+mutex printMtx;
 
+
+void print(int produceNr,bool prod)
+{
+  std::lock_guard<std::mutex> lock(printMtx);
+  if(prod)
+  {
+  cout << "Producing " << produceNr << endl;
+  }
+  else
+  {
+    cout << "------------Consuming " << produceNr << endl;
+  }
+}
 
 void ProducerJob()
 {
-  while (producerIndex <= 20)
+  ProducerConsumer ProdCons;
+  while (producerIndex <= maxNr)
   {
-    std::lock_guard<std::mutex> lock(prodMtx);
-    if (producerIndex <= 20)
+    int number = 0;
     {
-      cout << "Producing " << producerIndex << endl;
-      ProdCons.Produce(producerIndex);
-      this_thread::sleep_for(chrono::seconds(1));
+      std::lock_guard<std::mutex> lock(prodMtx);
+      number = producerIndex;
       producerIndex++;
+    }
+    if (number <= maxNr)
+    {
+      ProdCons.Produce(number);
+      {
+        print(number, true);
+      }
+      this_thread::sleep_for(chrono::seconds(1));
     }
   }
 
 }
 void ConsumerJob()
 {
-  while (consumerIndex <= 20)
+  ProducerConsumer ProdCons;
+  while (consumerIndex <= maxNr)
   {
-    std::lock_guard<std::mutex> lock(consMtx);
-    if (consumerIndex <= 20)
+    if (consumerIndex <= maxNr)
     { 
       auto ok = ProdCons.Consume();
-      if (ok != -1)
+      if (ok!=-1 )
       {
-      cout << "Consuming " << ok << endl;
-      this_thread::sleep_for(chrono::seconds(2));
-      consumerIndex++;
+        {
+          print(ok, false);
+          consumerIndex++;
+        }
+        this_thread::sleep_for(chrono::seconds(2));
       }
     }
   }

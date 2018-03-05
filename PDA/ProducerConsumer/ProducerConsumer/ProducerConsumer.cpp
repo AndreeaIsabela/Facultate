@@ -14,10 +14,7 @@ void ProducerConsumer::Produce(int i)
 
 int  ProducerConsumer::Consume()
 {
-  while (ableToConsume == false )
-  {
-    return -1;
-  }
+  
   while (!pcQueue.size())
   {
     ableToConsume = false;

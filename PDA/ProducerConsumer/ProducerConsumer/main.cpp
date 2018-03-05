@@ -23,7 +23,7 @@ void print(int produceNr,bool prod)
   }
 }
 
-void ProducerJob()
+void Producer()
 {
   ProducerConsumer ProdCons;
   while (producerIndex <= maxNr)
@@ -34,24 +34,21 @@ void ProducerJob()
       threadIndex = producerIndex;
       producerIndex++;
     }
-    if (threadIndex <= maxNr)
-    {
+    
       ProdCons.Produce(threadIndex);
       {
         print(threadIndex, true);
       }
       this_thread::sleep_for(chrono::seconds(1));
-    }
+    
   }
 
 }
-void ConsumerJob()
+void Consumer()
 {
   ProducerConsumer ProdCons;
   while (consumerIndex <= maxNr)
   {
-    if (consumerIndex <= maxNr)
-    { 
       auto ok = ProdCons.Consume();
       if (ok!=-1 )
       {
@@ -62,7 +59,7 @@ void ConsumerJob()
         }
         this_thread::sleep_for(chrono::seconds(2));
       }
-    }
+    
   }
 
 }
@@ -71,16 +68,13 @@ int main()
 {
   vector<thread> v;
 
-  for (int i = 1; i <= nrOfThreads; ++i)
+  for (int i = 1; i < nrOfThreads; ++i)
   {
-    if (i % 2 == 0)
-    {
-      v.push_back(thread(ProducerJob));
-    }
-    else
-    {
-      v.push_back(thread(ConsumerJob));
-    }
+    
+      v.push_back(thread(Producer));
+    
+      v.push_back(thread(Consumer));
+    
   }
 
   for (auto &it : v)

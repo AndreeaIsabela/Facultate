@@ -14,7 +14,6 @@ void ProducerConsumer::Produce(int i)
 
 int  ProducerConsumer::Consume()
 {
-  std::lock_guard<std::mutex> lock(mtx2);
   while (ableToConsume == false )
   {
     return -1;
@@ -24,7 +23,9 @@ int  ProducerConsumer::Consume()
     ableToConsume = false;
     return -1;
   }
+  std::lock_guard<std::mutex> lock(mtx2);
   auto temp = pcQueue.front();
+
   pcQueue.pop();
   return temp;
 }

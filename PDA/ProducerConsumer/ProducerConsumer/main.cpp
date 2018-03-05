@@ -2,7 +2,7 @@
 #include"ProducerConsumer.h"
 
 int maxNr = 20;
-int nrOfThreads = 6;
+int nrOfThreads = 3;
 int producerIndex = 0;
 int consumerIndex = 0;
 mutex prodMtx;
@@ -28,17 +28,17 @@ void ProducerJob()
   ProducerConsumer ProdCons;
   while (producerIndex <= maxNr)
   {
-    int number = 0;
+    int threadIndex = 0;
     {
       std::lock_guard<std::mutex> lock(prodMtx);
-      number = producerIndex;
+      threadIndex = producerIndex;
       producerIndex++;
     }
-    if (number <= maxNr)
+    if (threadIndex <= maxNr)
     {
-      ProdCons.Produce(number);
+      ProdCons.Produce(threadIndex);
       {
-        print(number, true);
+        print(threadIndex, true);
       }
       this_thread::sleep_for(chrono::seconds(1));
     }
@@ -57,6 +57,7 @@ void ConsumerJob()
       {
         {
           print(ok, false);
+          std::lock_guard<std::mutex> lock(consMtx);
           consumerIndex++;
         }
         this_thread::sleep_for(chrono::seconds(2));
@@ -68,11 +69,9 @@ void ConsumerJob()
 
 int main()
 {
-  queue<int> pcQueue;
-
   vector<thread> v;
 
-  for (int i = 0; i < nrOfThreads; ++i)
+  for (int i = 1; i <= nrOfThreads; ++i)
   {
     if (i % 2 == 0)
     {

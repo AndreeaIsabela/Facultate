@@ -1,10 +1,9 @@
 #include"stdafx.h"
 #include"ProducerConsumer.h"
 
-int maxNr = 20;
-int nrOfThreads = 3;
+
+int nrOfThreads = 6;
 int producerIndex = 0;
-int consumerIndex = 0;
 mutex prodMtx;
 mutex consMtx;
 mutex printMtx;
@@ -26,7 +25,7 @@ void print(int produceNr,bool prod)
 void Producer()
 {
   ProducerConsumer ProdCons;
-  while (producerIndex <= maxNr)
+  while (true)
   {
     int threadIndex = 0;
     {
@@ -47,15 +46,14 @@ void Producer()
 void Consumer()
 {
   ProducerConsumer ProdCons;
-  while (consumerIndex <= maxNr)
+  while (true)
   {
       auto ok = ProdCons.Consume();
       if (ok!=-1 )
       {
         {
-          print(ok, false);
           std::lock_guard<std::mutex> lock(consMtx);
-          consumerIndex++;
+          print(ok, false);
         }
         this_thread::sleep_for(chrono::seconds(2));
       }
@@ -68,7 +66,7 @@ int main()
 {
   vector<thread> v;
 
-  for (int i = 1; i < nrOfThreads; ++i)
+  for (int i = 1; i <= nrOfThreads; ++i)
   {
     
       v.push_back(thread(Producer));

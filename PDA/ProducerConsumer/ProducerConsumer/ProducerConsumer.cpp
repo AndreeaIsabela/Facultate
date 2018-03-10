@@ -1,29 +1,33 @@
 #include "ProducerConsumer.h"
+#include"Semaphore.h"
 
-bool ProducerConsumer::ableToConsume = false;
+mutex ProducerConsumer::mtx1;
+mutex ProducerConsumer::mtx2;
 queue<int> ProducerConsumer::pcQueue =  queue<int>();
+Semaphore producer(3);
+Semaphore consumer(0);
 
 void ProducerConsumer::Produce(int i)
 {
-  
-  std::lock_guard<std::mutex> lock(mtx1);
-  pcQueue.push(i);
-  ableToConsume = true;
-
+  producer.wait();
+  {
+    std::lock_guard<std::mutex> lock(mtx1);
+    pcQueue.push(i);
+  }
+  consumer.notify();
+ 
 }
 
 int  ProducerConsumer::Consume()
 {
-  
-  while (!pcQueue.size())
+  int temp;
+  consumer.wait();
   {
-    ableToConsume = false;
-    return -1;
+    std::lock_guard<std::mutex> lock(mtx2);
+    temp = pcQueue.front();
+    pcQueue.pop();
   }
-  std::lock_guard<std::mutex> lock(mtx2);
-  auto temp = pcQueue.front();
-
-  pcQueue.pop();
+    producer.notify();
   return temp;
 }
 

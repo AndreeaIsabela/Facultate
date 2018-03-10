@@ -11,6 +11,6 @@ public:
 
   static queue<int> pcQueue;
   static bool ableToConsume;
-  mutex mtx1,mtx2;
+  static mutex mtx1,mtx2;
 };
 

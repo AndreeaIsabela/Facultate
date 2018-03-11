@@ -7,8 +7,8 @@ public:
   Semaphore(int N) :count(N) {};
   ~Semaphore() {};
 
-  void notify();
-  void wait();
+  void Up();
+  void Down();
  
 private:
   std::mutex m;

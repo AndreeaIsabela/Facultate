@@ -117,9 +117,11 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ProducerConsumer.cpp" />
+    <ClCompile Include="Semaphore.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProducerConsumer.h" />
+    <ClInclude Include="Semaphore.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

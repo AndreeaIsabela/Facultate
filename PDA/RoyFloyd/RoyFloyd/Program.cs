@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using MPI;
+using RoyFloyd;
 
 namespace FloydWarshallAlgorithm
 {
@@ -12,7 +13,7 @@ namespace FloydWarshallAlgorithm
 
         public const int cst = 9999;
 
-        private static void Print(int[,] distance, int verticesCount)
+        private static void Print(int[][] distance, int verticesCount)
         {
             Console.WriteLine("Shortest distances between every pair of vertices:");
 
@@ -20,65 +21,43 @@ namespace FloydWarshallAlgorithm
             {
                 for (int j = 0; j < verticesCount; ++j)
                 {
-                    if (distance[i, j] == cst)
+                    if (distance[i][j] == cst)
                         Console.Write("cst".PadLeft(7));
                     else
-                        Console.Write(distance[i, j].ToString().PadLeft(7));
+                        Console.Write(distance[i][j].ToString().PadLeft(7));
                 }
 
                 Console.WriteLine();
             }
         }
 
-        public static void FloydWarshall(int[,] graph, int verticesCount, int nrOfProc, int myRank)
+        public static void FloydWarshall(int[][] graph, int verticesCount, int nrOfProc, int myRank)
         {
-
-
-            int[,] distance = new int[verticesCount, verticesCount];
-
-            for (int i = 0; i < verticesCount; ++i)
-                for (int j = 0; j < verticesCount; ++j)
-                    distance[i, j] = graph[i, j];
-
-            if (myRank != 0)
-            {
-
-                for (int k = 0; k < verticesCount; ++k)
-                {
-
-                    for (int i = myRank - 1; i < verticesCount; i += nrOfProc - 1)
+            var com = Communicator.world;
+            
+            for (int k = 0; k < verticesCount; ++k)
+            { 
+                for (int i = myRank; i <= myRank; ++i)
+                { 
+                    for (int j = 0; j < verticesCount; ++j)
                     {
-                        for (int j = 0; j < verticesCount; ++j)
-                        {
-                            if (distance[i, k] + distance[k, j] < distance[i, j])
-                                distance[i, j] = distance[i, k] + distance[k, j];
-                        }
+                        if (graph[i][k] + graph[k][j] < graph[i][j])
+                            graph[i][j] = graph[i][k] + graph[k][j];
+                    }
+                    var pair = new Pair();
+                    pair.Value = graph[i];
+                    pair.Line = i;
+                    var perechi = com.Allgather<Pair>(pair);
+                    foreach(var pereche in perechi)
+                    {
+                        graph[pereche.Line] = pereche.Value;
                     }
                 }
-
-                Communicator.world.Send<int[,]>(distance, 0, myRank);
+                    
             }
-
-            if (myRank == 0)
+            if(myRank == 0)
             {
-
-
-                for (int i = 1; i < nrOfProc; ++i)
-                {
-                    int[,] receivedGraph = Communicator.world.Receive<int[,]>(i, i);
-
-                    for (int k = 0; k < verticesCount; ++k)
-                        for (int j = 0; j < verticesCount; ++j)
-                        {
-                            if(distance[k, j] > receivedGraph[k, j])
-                            {
-                                distance[k, j] = receivedGraph[k, j];
-                            }
-                        }
-
-
-                }
-                Print(distance, verticesCount);
+                Print(graph, verticesCount);
             }
         }
 
@@ -91,11 +70,14 @@ namespace FloydWarshallAlgorithm
 
 
 
-                int[,] graph = {
-                         { 0,   3,  6, 15 },
-                         { cst, 0,   -2, cst },
-                         { cst, cst, 0 , 2 },
-                         { 1, cst, cst, 0 }
+                int[][] graph = 
+                    
+                    
+                    {
+                       new int[]  { 0,   3,  6, 15 },
+                       new int[]   { cst, 0,   -2, cst },
+                         new int[] { cst, cst, 0 , 2 },
+                         new int[] { 1, cst, cst, 0 }
                            };
 
                 FloydWarshall(graph, 4, nrOfProc, myRank);

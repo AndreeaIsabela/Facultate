@@ -46,19 +46,19 @@ int main()
 {
   int* d_roy;
   cudaMalloc(&d_roy, N*N * sizeof(int));
+  cudaMemcpy(d_roy, graph, N * N * sizeof(int), cudaMemcpyHostToDevice);
 
 
   for (int k = 0; k < N; ++k)
   {
-    cudaMemcpy(d_roy, graph, N * N * sizeof(int), cudaMemcpyHostToDevice);
     int* d_k;
     cudaMalloc(&d_k, sizeof(int));
     cudaMemcpy(d_k, &k, sizeof(int), cudaMemcpyHostToDevice);
 
-    RoyFloyd << <1, N > >>(d_roy, d_k);
+    RoyFloyd << <1, N > >>(d_roy, *d_k);
 
-    cudaMemcpy(graph, d_roy, N * N * sizeof(int), cudaMemcpyDeviceToHost);
   }
+    cudaMemcpy(graph, d_roy, N * N * sizeof(int), cudaMemcpyDeviceToHost);
 
   printGraph(graph);
 
